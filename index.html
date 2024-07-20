@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Tasklist</title>
+</head>
+<body>
+
+<header>
+    <div class="pos-f-t">
+        <div class="collapse" id="navbarToggleExternalContent">
+          <div class="bg-dark p-4">
+            <h5 class="text-white h4">Collapsed content</h5>
+            <span class="text-muted">Toggleable via the navbar brand.</span>
+          </div>
+        </div>
+        <nav class="navbar">
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="logo-section">
+            <img src="img/logo.png" alt="" class="logo">
+          </div>
+        </nav>
+      </div>
+</header>
+
+<section class="caroussel-section">
+    <div id="caroussel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="img/Property 1=Default.png" class="d-block w-100" alt="Slide 1">
+            </div>
+            <div class="carousel-item">
+                <img src="img/Property 1=Variant5.png" class="d-block w-100" alt="Slide 2">
+            </div>
+            <div class="carousel-item">
+                <img src="img/Property 1=Variant3.png" class="d-block w-100" alt="Slide 4">
+            </div>
+        </div>
+    </div>
+
+</section>
+
+
+
+
+
+
+
+
+
+
+    <script>
+        // Optionnel : Pour s'assurer que le carrousel démarre automatiquement au chargement de la page
+        $(document).ready(function(){
+            $('#carouselExampleControls').carousel({
+                interval: 3000
+            });
+        });
+    </script>
+
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        // Liaison avec la base de données dans supabase
+const { createClient } = supabase;
+const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
+const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
+const database = createClient(url, key);
+console.log(database);
+const save = document.querySelector("#save");
+save.addEventListener("click", async(e) =>{
+    e.preventDefault();
+    const title = document.querySelector("#title").value;
+    const date = document.querySelector("#date").value;
+    const description = document.querySelector("#description").value;
+    const result = await database.from("task").insert({
+        title,
+        date,
+        description
+    });
+    console.log(result);
+    displayTasks();
+});
+
+function displayTasks() {
+}
+
+async function displayTasks() {
+            const taskContainer = document.getElementById('taskContainer');
+            taskContainer.innerHTML = '';
+            const { data, error } = await database.from('task').select('*');
+            if (error) {
+                console.error('Erreur lors de la récupération des tâches:', error);
+                return;
+            }
+            data.forEach(task => {
+                const taskCard = document.createElement('div');
+                taskCard.classList.add('card');
+                taskCard.innerHTML = `
+                    <h5>${task.title}</h5>
+                    <p>Date: ${task.date}</p>
+                    <p>Description: ${task.description}</p>
+                `;
+                taskContainer.appendChild(taskCard);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', displayTasks);
+    </script> -->
+</body>
+</html>
