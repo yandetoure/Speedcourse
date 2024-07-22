@@ -30,7 +30,8 @@
             text-align: center;
         }
         .card-body {
-            padding: 20px;
+            padding: 10px;
+            font-size: 12px;
         }
         .product-table {
             width: 100%;
@@ -105,12 +106,11 @@
                             </div>
                             <hr class="h1">
                             <div class="card-body">
-                                <h5>Produits</h5>
                                 <table class="table table-striped product-table">
                                     <thead>
                                         <tr>
                                             <th>Nom</th>
-                                            <th>Quantité</th>
+                                            <th>Qté</th>
                                             <th>Total</th>
                                             <th>Actions</th>
                                         </tr>
@@ -313,18 +313,19 @@
             </ul>
         </div>
     </nav>
-
+    <a href="add.html">add</a>
+    <a href="courses.html">Courses</a>
     <section class="caroussel-section">
         <div id="caroussel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
             <div class="carousel-inner">
                 <div class="carousel-item active">
-                    <img src="img/Property 1=Default.png" class="d-block w-100" alt="Slide 1">
+                    <img src="img/Property 1=Default.png" class="d-block w-80" alt="Slide 1">
                 </div>
                 <div class="carousel-item">
-                    <img src="img/Property 1=Variant5.png" class="d-block w-100" alt="Slide 2">
+                    <img src="img/Property 1=Variant5.png" class="d-block w-80" alt="Slide 2">
                 </div>
                 <div class="carousel-item">
-                    <img src="img/Property 1=Variant3.png" class="d-block w-100" alt="Slide 4">
+                    <img src="img/Property 1=Variant3.png" class="d-block w-80" alt="Slide 4">
                 </div>
             </div>
         </div>
@@ -348,7 +349,7 @@
                 </div>
                 <div class="form-group">
                     <label for="edit-unit-price">Prix Unitaire</label>
-                    <input type="number" class="form-control" id="edit-unit-price" step="0.01" required>
+                    <input type="number" class="form-control" id="edit-unit-price" required>
                 </div>
                 <div class="form-group">
                     <label for="edit-total-price">Prix Total</label>
