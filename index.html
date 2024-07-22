@@ -84,7 +84,80 @@
             background-color: red;
             color: white;
         }
+        .navbar-logo{
+            width:200px;
+        }
+
     </style>
+
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-logo" href="#"><img src="img/logo.png" alt="logo" class="navbar-logo"></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Features</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Pricing</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="#">Disabled</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    <div class="container">
+        <div id="course-container"></div>
+
+        <!-- Formulaire d'édition de course -->
+        <div id="edit-course-form" class="form-container" style="display: none;">
+            <h3>Modifier la course</h3>
+            <form>
+                <input type="hidden" id="edit-course-id">
+                <div class="form-group">
+                    <label for="edit-course-name">Nom de la course:</label>
+                    <input type="text" class="form-control" id="edit-course-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-course-date">Date:</label>
+                    <input type="date" class="form-control" id="edit-course-date" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('edit-course-form').style.display = 'none';">Annuler</button>
+            </form>
+        </div>
+
+        <!-- Formulaire d'édition de produit -->
+        <div id="edit-product-form" class="form-container" style="display: none;">
+            <h3>Modifier le produit</h3>
+            <form>
+                <input type="hidden" id="edit-product-id">
+                <div class="form-group">
+                    <label for="edit-product-name">Nom du produit:</label>
+                    <input type="text" class="form-control" id="edit-product-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-product-quantity">Quantité:</label>
+                    <input type="number" class="form-control" id="edit-product-quantity" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-product-total">Total:</label>
+                    <input type="text" class="form-control" id="edit-product-total" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('edit-product-form').style.display = 'none';">Annuler</button>
+            </form>
+        </div>
+    </div>
+</body>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.26.0/dist/umd/supabase.min.js"></script>
     <script>
         const { createClient } = supabase;
@@ -332,49 +405,4 @@
         });
     </script>
 </head>
-<body>
-    <div class="container">
-        <div id="course-container"></div>
-
-        <!-- Formulaire d'édition de course -->
-        <div id="edit-course-form" class="form-container" style="display: none;">
-            <h3>Modifier la course</h3>
-            <form>
-                <input type="hidden" id="edit-course-id">
-                <div class="form-group">
-                    <label for="edit-course-name">Nom de la course:</label>
-                    <input type="text" class="form-control" id="edit-course-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit-course-date">Date:</label>
-                    <input type="date" class="form-control" id="edit-course-date" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Mettre à jour</button>
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('edit-course-form').style.display = 'none';">Annuler</button>
-            </form>
-        </div>
-
-        <!-- Formulaire d'édition de produit -->
-        <div id="edit-product-form" class="form-container" style="display: none;">
-            <h3>Modifier le produit</h3>
-            <form>
-                <input type="hidden" id="edit-product-id">
-                <div class="form-group">
-                    <label for="edit-product-name">Nom du produit:</label>
-                    <input type="text" class="form-control" id="edit-product-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit-product-quantity">Quantité:</label>
-                    <input type="number" class="form-control" id="edit-product-quantity" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit-product-total">Total:</label>
-                    <input type="text" class="form-control" id="edit-product-total" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Mettre à jour</button>
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('edit-product-form').style.display = 'none';">Annuler</button>
-            </form>
-        </div>
-    </div>
-</body>
 </html>
