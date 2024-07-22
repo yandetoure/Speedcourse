@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription et Connexion</title>
+    <style>
+        .hidden { display: none; }
+        form { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div id="auth-container">
+        <!-- Formulaire d'inscription -->
+        <form id="signup-form">
+            <h2>Inscription</h2>
+            <input type="email" id="signup-email" placeholder="Email" required />
+            <input type="password" id="signup-password" placeholder="Mot de passe" required />
+            <button type="submit" id="signup-button">S'inscrire</button>
+            <p>Déjà un compte ? <a href="#" id="show-signin">Se connecter</a></p>
+        </form>
+
+        <!-- Formulaire de connexion -->
+        <form id="signin-form" class="hidden">
+            <h2>Connexion</h2>
+            <input type="email" id="signin-email" placeholder="Email" required />
+            <input type="password" id="signin-password" placeholder="Mot de passe" required />
+            <button type="submit" id="signin-button">Se connecter</button>
+            <p>Pas encore de compte ? <a href="#" id="show-signup">S'inscrire</a></p>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.26.0/dist/umd/supabase.min.js"></script>
+    <script>
+        // Liaison avec la base de données dans supabase
+        const { createClient } = supabase;
+        const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
+        const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
+        const database = createClient(url, key);
+
+        // Fonction d'inscription
+        async function signUp(email, password) {
+            const { data, error } = await database.auth.signUp({ email, password });
+            if (error) {
+                console.error('Erreur lors de l\'inscription:', error.message);
+            } else {
+                console.log('Inscription réussie:', data);
+                // Changer d'affichage après une inscription réussie
+                document.getElementById('signup-form').classList.add('hidden');
+                document.getElementById('signin-form').classList.remove('hidden');
+            }
+        }
+
+        // Fonction de connexion
+        async function signIn(email, password) {
+            const { data, error } = await database.auth.signInWithPassword({ email, password });
+            if (error) {
+                console.error('Erreur lors de la connexion:', error.message);
+            } else {
+                console.log('Connexion réussie:', data);
+            }
+        }
+
+        // Gestion des événements de formulaire
+        document.getElementById('signup-form').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Empêche le rechargement de la page
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            await signUp(email, password);
+        });
+
+        document.getElementById('signin-form').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Empêche le rechargement de la page
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+            await signIn(email, password);
+        });
+
+        // Gestion de l'affichage des formulaires
+        document.getElementById('show-signin').addEventListener('click', (event) => {
+            event.preventDefault();
+            document.getElementById('signup-form').classList.add('hidden');
+            document.getElementById('signin-form').classList.remove('hidden');
+        });
+
+        document.getElementById('show-signup').addEventListener('click', (event) => {
+            event.preventDefault();
+            document.getElementById('signin-form').classList.add('hidden');
+            document.getElementById('signup-form').classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>

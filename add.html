@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grocery Management</title>
+    <title>Gestion de tâche</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
@@ -50,12 +50,12 @@
             cursor: pointer;
         }
         .edit-btn, .delete-btn {
-            margin-top: 20px;
-            padding: 10px 20px;
+            padding: 5px 10px;
             border: none;
             color: white;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 12px;
         }
         .edit-btn {
             background-color: #007bff;
@@ -64,7 +64,7 @@
             background-color: #dc3545;
         }
         .summary-header {
-            background-color: #ff0000;
+            background-color: #ff6600;
             color: white;
             padding: 10px;
             text-align: center;
@@ -84,6 +84,27 @@
         .total-row {
             font-weight: bold;
         }
+        .status-checkbox:checked + label {
+            background-color: #28a745;
+            color: white;
+        }
+        .status-checkbox {
+            display: none;
+        }
+        .status-checkbox + label {
+            cursor: pointer;
+            padding: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.26.0/dist/umd/supabase.min.js"></script>
     <script>
@@ -92,15 +113,16 @@
         const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
         const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
         const database = createClient(url, key);
-        
+
+        let courseId;
+        let editingProductId = null;
+
         async function addProductToCourse(courseId, productName, quantity, unitPrice, totalPrice) {
-            // Validation des entrées
             if (!courseId || !productName || isNaN(quantity) || isNaN(unitPrice) || isNaN(totalPrice)) {
                 console.error('Tous les champs doivent être correctement remplis.');
                 return;
             }
 
-            // Convertir les valeurs en entiers et flottants
             quantity = parseInt(quantity);
             unitPrice = parseFloat(unitPrice);
             totalPrice = parseFloat(totalPrice);
@@ -108,7 +130,7 @@
             try {
                 const { data, error } = await database
                     .from('products')
-                    .insert([{ courseId, productName, quantity, unitPrice, totalPrice }]);
+                    .insert([{ courseId, productName, quantity, unitPrice, totalPrice, status: 'À acheter' }]);
 
                 if (error) {
                     console.error('Erreur lors de l\'ajout du produit:', error);
@@ -120,6 +142,67 @@
             }
         }
 
+        async function updateProduct(id, productName, quantity, unitPrice, totalPrice) {
+            if (!id || !productName || isNaN(quantity) || isNaN(unitPrice) || isNaN(totalPrice)) {
+                console.error('Tous les champs doivent être correctement remplis.');
+                return;
+            }
+
+            quantity = parseInt(quantity);
+            unitPrice = parseFloat(unitPrice);
+            totalPrice = parseFloat(totalPrice);
+
+            try {
+                const { data, error } = await database
+                    .from('products')
+                    .update({ productName, quantity, unitPrice, totalPrice })
+                    .eq('id', id);
+
+                if (error) {
+                    console.error('Erreur lors de la mise à jour du produit:', error);
+                } else {
+                    console.log('Produit mis à jour avec succès:', data);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour du produit:', error);
+            }
+        }
+
+        async function deleteProduct(id) {
+            try {
+                const { data, error } = await database
+                    .from('products')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    console.error('Erreur lors de la suppression du produit:', error);
+                } else {
+                    console.log('Produit supprimé avec succès:', data);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression du produit:', error);
+            }
+        }
+
+        async function toggleProductStatus(id, status) {
+            try {
+                const newStatus = status === 'À acheter' ? 'Acheté' : 'À acheter';
+                const { data, error } = await database
+                    .from('products')
+                    .update({ status: newStatus })
+                    .eq('id', id);
+
+                if (error) {
+                    console.error('Erreur lors de la mise à jour du statut du produit:', error);
+                } else {
+                    console.log('Statut du produit mis à jour avec succès:', data);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour du statut du produit:', error);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const createCourseForm = document.getElementById('course-form');
             const addProductForm = document.getElementById('product-form');
@@ -128,13 +211,16 @@
             const courseSummaryDiv = document.getElementById('course-summary');
             const productTable = document.getElementById('product-table');
             const finishBtn = document.getElementById('finish-btn');
+            const productNameInput = document.getElementById('product-name');
+            const quantityInput = document.getElementById('quantity');
+            const unitPriceInput = document.getElementById('unit-price');
+            const totalPriceInput = document.getElementById('total-price');
 
             createCourseForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const coursename = document.getElementById('course-name').value;
                 const date = document.getElementById('course-date').value;
 
-                // Create the course in Supabase
                 const { data, error } = await database
                     .from('courses')
                     .insert([{ coursename, date }]);
@@ -150,28 +236,87 @@
                 createCourseDiv.style.display = 'none';
                 addProductDiv.style.display = 'block';
                 document.getElementById('summary-date').textContent = date;
+                document.querySelector('.summary-header h2').textContent = coursename;
             });
 
             addProductForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const productName = document.getElementById('product-name').value;
-                const quantity = document.getElementById('quantity').value;
-                const unitPrice = document.getElementById('unit-price').value || 0;
+                const productName = productNameInput.value;
+                const quantity = quantityInput.value;
+                const unitPrice = unitPriceInput.value || 0;
                 const totalPrice = quantity * unitPrice;
 
-                // Add the product to the course in Supabase
-                await addProductToCourse(courseId, productName, quantity, unitPrice, totalPrice);
+                if (editingProductId) {
+                    await updateProduct(editingProductId, productName, quantity, unitPrice, totalPrice);
+                    editingProductId = null;
+                } else {
+                    await addProductToCourse(courseId, productName, quantity, unitPrice, totalPrice);
+                }
 
                 const row = productTable.insertRow();
+                const statusCheckboxId = `status-checkbox-${productTable.rows.length}`;
                 row.innerHTML = `
                     <td>${productName}</td>
                     <td>${quantity}</td>
-                    <td>${unitPrice}</td>
-                    <td>${totalPrice}</td>
-                    <td>À acheter</td>
+                    <td>${unitPrice} FCFA</td>
+                    <td>${totalPrice} FCFA</td>
+                    <td>
+                        <input type="checkbox" id="${statusCheckboxId}" class="status-checkbox">
+                        <label for="${statusCheckboxId}"></label>
+                    </td>
                 `;
 
                 document.getElementById('product-form').reset();
+
+                row.querySelector('.status-checkbox').addEventListener('change', async (event) => {
+                    const isChecked = event.target.checked;
+                    const status = isChecked ? 'Acheté' : 'À acheter';
+                    const label = event.target.nextElementSibling;
+
+                    if (isChecked) {
+                        label.style.backgroundColor = '#28a745';
+                        label.style.color = 'white';
+                    } else {
+                        label.style.backgroundColor = '';
+                        label.style.color = '';
+                    }
+
+                    await toggleProductStatus(row.dataset.productId, status);
+                });
+
+                const editBtn = document.createElement('button');
+                editBtn.classList.add('edit-btn');
+                editBtn.innerText = 'Modifier';
+                editBtn.addEventListener('click', () => {
+                    editingProductId = row.dataset.productId;
+                    productNameInput.value = row.cells[0].innerText;
+                    quantityInput.value = row.cells[1].innerText;
+                    unitPriceInput.value = parseFloat(row.cells[2].innerText);
+                    totalPriceInput.value = parseFloat(row.cells[3].innerText);
+                });
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('delete-btn');
+                deleteBtn.innerText = 'Supprimer';
+                deleteBtn.addEventListener('click', async () => {
+                    await deleteProduct(row.dataset.productId);
+                    row.remove();
+                });
+
+                row.insertCell(-1).appendChild(editBtn);
+                row.insertCell(-1).appendChild(deleteBtn);
+            });
+
+            unitPriceInput.addEventListener('input', () => {
+                const quantity = parseInt(quantityInput.value) || 0;
+                const unitPrice = parseFloat(unitPriceInput.value) || 0;
+                totalPriceInput.value = quantity * unitPrice;
+            });
+
+            quantityInput.addEventListener('input', () => {
+                const quantity = parseInt(quantityInput.value) || 0;
+                const unitPrice = parseFloat(unitPriceInput.value) || 0;
+                totalPriceInput.value = quantity * unitPrice;
             });
 
             finishBtn.addEventListener('click', () => {
@@ -184,7 +329,7 @@
 <body>
     <div id="create-course" class="container">
         <div class="header">
-            <a href="#" class="back-btn">← Retour</a>
+            <a href="index.html" class="back-btn">← Retour</a>
             <h1>Ajout d'une course</h1>
         </div>
         <form id="course-form">
@@ -234,21 +379,22 @@
                     <th>Nom</th>
                     <th>Quantité</th>
                     <th>Prix unitaire</th>
-                    <th>total</th>
+                    <th>Total</th>
                     <th>Statut</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
             </tbody>
             <tfoot>
                 <tr class="total-row">
-                    <td colspan="4">Total</td>
+                    <td colspan="5">Total</td>
                     <td id="total-amount">0 FCFA</td>
                 </tr>
             </tfoot>
         </table>
-        <div class="buttons">
-            <button class="edit-btn">Modifier</button>
+        <div class="btn-container">
+            <button class="continue-btn">Ajouter un produit</button>
             <button class="delete-btn">Supprimer</button>
         </div>
     </div>
