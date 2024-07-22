@@ -3,66 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accueil - Gestion de Courses</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="styles/main.css" rel="stylesheet">
-
+    <title>Gestion de tâches</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
+            font-family: Arial, sans-serif;
             background-color: #f8f9fa;
         }
-        .card-header.bg-danger {
-            background-color: #dc3545 !important;
+        .container {
+            margin-top: 20px;
         }
-        .card-header.bg-success {
-            background-color: #28a745 !important;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-        .img-fluid {
-            max-width: 100%;
-            height: auto;
-        }
-        .navbar-toggler {
-            background-color: orange;
-        }
-        .hr1 {
-            border: 4px solid #ED7200;
+        .card {
             margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #E30404;
+            color: white;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            text-align: center;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .product-table {
+            width: 100%;
+        }
+        .product-table th, .product-table td {
+            text-align: center;
+        }
+        .product-actions {
+            text-align: center;
+        }
+        .product-actions i {
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .edit-icon {
+            color: #007bff;
+        }
+        .delete-icon {
+            color: #dc3545;
+        }
+        .form-container {
+            margin-top: 20px;
+        }
+        .form-container input, .form-container select {
+            margin-bottom: 10px;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .h5 {
+            font-size: 18px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+        .span {
+            font-size: 16px;
+            font-weight: 500;
+            color: white;
+        }
+        .h1 {
+            color: rgb(21, 255, 0);
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.26.0/dist/umd/supabase.min.js"></script>
+    <script>
+        const { createClient } = supabase;
+        const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
+        const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
+        const database = createClient(url, key);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const courseContainer = document.getElementById('course-container');
+
+            async function fetchCourses() {
+                try {
+                    const { data, error } = await database.from('courses').select('*');
+                    if (error) {
+                        console.error('Erreur lors de la récupération des courses:', error);
+                        return;
+                    }
+
+                    data.forEach(course => {
+                        const card = document.createElement('div');
+                        card.classList.add('card');
+                        card.id = `course-card-${course.id}`;
+                        card.innerHTML = `
+                            <div class="card-header">
+                                <h5 class=h5>${course.coursename}</h5>
+                                <span class="span">Date: ${course.date}</span>
+                            </div>
+                            <hr class="h1">
+                            <div class="card-body">
+                                <h5>Produits</h5>
+                                <table class="table table-striped product-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Quantité</th>
+                                            <th>Total</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="product-list-${course.id}">
+                                    </tbody>
+                                </table>
+                                <div class="btn-container">
+                                    <button class="btn btn-primary" onclick="showEditCourseForm(${course.id})">Modifier</button>
+                                    <button class="btn btn-danger" onclick="deleteCourse(${course.id})">Supprimer</button>
+                                </div>
+                            </div>
+                        `;
+                        courseContainer.appendChild(card);
+                        fetchProducts(course.id);
+                    });
+                } catch (error) {
+                    console.error('Erreur lors de la récupération des courses:', error);
+                }
+            }
+
+            async function fetchProducts(courseId) {
+                try {
+                    const { data, error } = await database.from('products').select('*').eq('courseId', courseId);
+                    if (error) {
+                        console.error('Erreur lors de la récupération des produits:', error);
+                        return;
+                    }
+
+                    const productList = document.getElementById(`product-list-${courseId}`);
+                    data.forEach(product => {
+                        const row = document.createElement('tr');
+                        row.id = `product-${product.id}`;
+                        row.innerHTML = `
+                            <td>${product.productName}</td>
+                            <td>${product.quantity}</td>
+                            <td>${product.totalPrice} FCFA</td>
+                            <td class="product-actions">
+                                <i class="fas fa-edit edit-icon" onclick="showEditProductForm(${product.id})"></i>
+                                <i class="fas fa-trash delete-icon" onclick="deleteProduct(${product.id})"></i>
+                            </td>
+                        `;
+                        productList.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error('Erreur lors de la récupération des produits:', error);
+                }
+            }
+
+            async function deleteCourse(courseId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette course ?')) {
+                    try {
+                        const { error } = await database.from('courses').delete().eq('id', courseId);
+                        if (error) {
+                            console.error('Erreur lors de la suppression de la course:', error);
+                            return;
+                        }
+
+                        document.getElementById(`course-card-${courseId}`).remove();
+                        console.log('Course supprimée avec succès');
+                    } catch (error) {
+                        console.error('Erreur lors de la suppression de la course:', error);
+                    }
+                }
+            }
+
+            async function deleteProduct(productId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+                    try {
+                        const { error } = await database.from('products').delete().eq('id', productId);
+                        if (error) {
+                            console.error('Erreur lors de la suppression du produit:', error);
+                            return;
+                        }
+
+                        document.getElementById(`product-${productId}`).remove();
+                        console.log('Produit supprimé avec succès');
+                    } catch (error) {
+                        console.error('Erreur lors de la suppression du produit:', error);
+                    }
+                }
+            }
+
+            function showEditCourseForm(courseId) {
+                const courseCard = document.getElementById(`course-card-${courseId}`);
+                const courseName = courseCard.querySelector('h5').textContent;
+                const courseDate = courseCard.querySelector('.card-header span').textContent.split(': ')[1];
+
+                document.getElementById('edit-course-id').value = courseId;
+                document.getElementById('edit-course-name').value = courseName;
+                document.getElementById('edit-course-date').value = courseDate;
+
+                document.getElementById('edit-course-form').style.display = 'block';
+            }
+
+            function showEditProductForm(productId) {
+                const productRow = document.getElementById(`product-${productId}`);
+                const productName = productRow.querySelector('td:nth-child(1)').textContent;
+                const productQuantity = productRow.querySelector('td:nth-child(2)').textContent;
+                const productTotalPrice = productRow.querySelector('td:nth-child(3)').textContent.split(' ')[0];
+
+                document.getElementById('edit-product-id').value = productId;
+                document.getElementById('edit-product-name').value = productName;
+                document.getElementById('edit-quantity').value = productQuantity;
+                document.getElementById('edit-total-price').value = productTotalPrice;
+
+                document.getElementById('edit-product-form').style.display = 'block';
+            }
+
+            window.deleteCourse = deleteCourse;
+            window.showEditCourseForm = showEditCourseForm;
+            window.showEditProductForm = showEditProductForm;
+            window.deleteProduct = deleteProduct;
+
+            document.querySelector('#edit-product-form form').addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const productId = document.getElementById('edit-product-id').value;
+                const productName = document.getElementById('edit-product-name').value;
+                const quantity = document.getElementById('edit-quantity').value;
+                const unitPrice = document.getElementById('edit-unit-price').value;
+                const totalPrice = document.getElementById('edit-total-price').value;
+
+                try {
+                    const { error } = await database.from('products').update({
+                        productName,
+                        quantity,
+                        unitPrice,
+                        totalPrice
+                    }).eq('id', productId);
+                    if (error) {
+                        console.error('Erreur lors de la mise à jour du produit:', error);
+                        return;
+                    }
+
+                    const productRow = document.getElementById(`product-${productId}`);
+                    productRow.querySelector('td:nth-child(1)').textContent = productName;
+                    productRow.querySelector('td:nth-child(2)').textContent = quantity;
+                    productRow.querySelector('td:nth-child(3)').textContent = `${totalPrice} FCFA`;
+
+                    document.getElementById('edit-product-form').style.display = 'none';
+                    console.log('Produit mis à jour avec succès');
+                } catch (error) {
+                    console.error('Erreur lors de la mise à jour du produit:', error);
+                }
+            });
+
+            document.querySelector('#edit-course-form form').addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const courseId = document.getElementById('edit-course-id').value;
+                const courseName = document.getElementById('edit-course-name').value;
+                const courseDate = document.getElementById('edit-course-date').value;
+
+                try {
+                    const { error } = await database.from('courses').update({
+                        coursename: courseName,
+                        date: courseDate
+                    }).eq('id', courseId);
+                    if (error) {
+                        console.error('Erreur lors de la mise à jour de la course:', error);
+                        return;
+                    }
+
+                    const courseCard = document.getElementById(`course-card-${courseId}`);
+                    courseCard.querySelector('h5').textContent = courseName;
+                    courseCard.querySelector('.card-header span').textContent = `Date: ${courseDate}`;
+
+                    document.getElementById('edit-course-form').style.display = 'none';
+                    console.log('Course mise à jour avec succès');
+                } catch (error) {
+                    console.error('Erreur lors de la mise à jour de la course:', error);
+                }
+            });
+
+            fetchCourses();
+        });
+    </script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div><img src="img/logo.png" alt="logo" width="200"> </div>
-         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-             <span class="navbar-toggler-icon"></span>
-         </button>
-         <div class="collapse navbar-collapse" id="navbarNav">
-             <ul class="navbar-nav">
-                 <li class="nav-item active">
-                     <a class="nav-link" href="#">Accueil</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="nav-link" href="add.html">Ajouter produit</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="nav-link" href="courses.html">Mes Courses</a>
-                 </li>
-                 <li class="nav-item">
-                     <a class="nav-link" href="#">Déconnexion</a>
-                 </li>
-             </ul>
-         </div>
-     </nav>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="add.html">Ajouter produit</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="courses.html">Mes Courses</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Déconnexion</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
-     <section class="caroussel-section">
+    <section class="caroussel-section">
         <div id="caroussel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
             <div class="carousel-inner">
                 <div class="carousel-item active">
@@ -78,94 +330,52 @@
         </div>
     </section>
 
-    <div id="app"></div>
+    <div class="container">
+        <div id="course-container"></div>
 
-    <script>
-
-            // Liaison avec la base de données dans supabase
-        const { createClient } = supabase;
-        const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
-        const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
-        const database = createClient(url, key);
-        document.addEventListener('DOMContentLoaded', () => {
-            const app = document.getElementById('app');
-            function tableSection(course) {
-                return `
-                    <div class="card mb-4">
-                        <div class="card-header text-white ${course.headerColor}">
-                            <h4>${course.CourseName}</h4>
-                            <p>${course.date}</p>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Nom</th>
-                                        <th>Quantité</th>
-                                        <th>Prix</th>
-                                        <th>Statut</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${course.products.map(product => `
-                                        <tr>
-                                            <td>${product.productName}</td>
-                                            <td>${product.quantity}</td>
-                                            <td>${product.price}</td>
-                                            <td><input type="checkbox"></td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="3">Total</td>
-                                        <td>${course.total}</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                            <button class="btn btn-primary">Modifier</button>
-                            <button class="btn btn-danger">Supprimer</button>
-                        </div>
-                    </div>
-                `;
-            }
-
-            app.innerHTML = `
-                <div class="container mt-5">
-                    <div class="text-center mb-4">
-                        <hr class="hr1">
-                        <h2>Vous avez une course à faire aujourd'hui !</h2>
-                    </div>
-                    ${courses.map(course => tableSection(course)).join('')}
+        <!-- Formulaire d'édition du produit -->
+        <div id="edit-product-form" class="form-container card p-4" style="display:none;">
+            <h2 class="mb-4">Modifier le produit</h2>
+            <form>
+                <input type="hidden" id="edit-product-id">
+                <div class="form-group">
+                    <label for="edit-product-name">Nom du produit</label>
+                    <input type="text" class="form-control" id="edit-product-name" required>
                 </div>
-            `;
-        });
+                <div class="form-group">
+                    <label for="edit-quantity">Quantité</label>
+                    <input type="number" class="form-control" id="edit-quantity" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-unit-price">Prix Unitaire</label>
+                    <input type="number" class="form-control" id="edit-unit-price" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-total-price">Prix Total</label>
+                    <input type="number" class="form-control" id="edit-total-price" step="0.01" required readonly>
+                </div>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('edit-product-form').style.display = 'none';">Annuler</button>
+            </form>
+        </div>
 
-
-        async function displayTasks() {
-            const taskContainer = document.getElementById('app');
-            taskContainer.innerHTML = '';
-            const { data, error } = await supabase.from('courses').select('*');
-            if (error) {
-                console.error('Erreur lors de la récupération des tâches:', error);
-                return;
-            }
-            data.forEach(task => {
-                const app = document.createElement('div');
-                taskCard.classList.add('app');
-                taskCard.innerHTML = `
-                    <h5>${task.title}</h5>
-                    <p>Date: ${task.date}</p>
-                    <p>Description: ${task.description}</p>
-                `;
-                app.appendChild(taskCard);
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', displayTasks);
-    </script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <!-- Formulaire d'édition de la course -->
+        <div id="edit-course-form" class="form-container card p-4" style="display:none;">
+            <h2 class="mb-4">Modifier la course</h2>
+            <form>
+                <input type="hidden" id="edit-course-id">
+                <div class="form-group">
+                    <label for="edit-course-name">Nom de la course</label>
+                    <input type="text" class="form-control" id="edit-course-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-course-date">Date</label>
+                    <input type="date" class="form-control" id="edit-course-date" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('edit-course-form').style.display = 'none';">Annuler</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
