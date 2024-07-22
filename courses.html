@@ -18,9 +18,14 @@
             margin-bottom: 20px;
         }
         .card-header {
-            display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 15px;
+            background-color: #E30404;
+            color: white;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            text-align: center;
         }
         .card-header h3 {
             text-align: center;
@@ -51,6 +56,16 @@
         .form-container input, .form-container select {
             margin-bottom: 10px;
         }
+        .card-body {
+            padding: 10px;
+            font-size: 13px;
+        }
+                .h5 {
+            font-size: 18px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.26.0/dist/umd/supabase.min.js"></script>
     <script>
@@ -76,11 +91,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 card.id = `course-card-${course.id}`;
                 card.innerHTML = `
                     <div class="card-header">
+                        <h5>${course.coursename}</h5>
                         <span>Date: ${course.date}</span>
-                        <h3>${course.coursename}</h3>
+
                     </div>
                     <div class="card-body">
-                        <h5>Produits</h5>
                         <table class="table table-striped product-table">
                             <thead>
                                 <tr>
@@ -271,8 +286,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 <body>
     <div class="container">
         <div class="header">
+            <a href="index.html" class="back-btn">← Retour</a>
             <h1>Liste des courses</h1>
-            <a href="add.html" class="btn btn-primary">Créer une nouvelle course</a>
         </div>
         <div id="course-container"></div>
 
