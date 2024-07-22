@@ -150,7 +150,7 @@
 
             quantity = parseInt(quantity);
             unitPrice = parseFloat(unitPrice);
-            totalPrice = parseFloat(totalPrice);
+            totalPrice = totalPrice = quantity * unitPrice;
 
             try {
                 const { data, error } = await database
@@ -381,17 +381,14 @@
                     <th>Quantité</th>
                     <th>Prix unitaire</th>
                     <th>Total</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
+                    <th>Statut</th><br>
+
                 </tr>
+                <th>Actions</th>
             </thead>
             <tbody>
             </tbody>
             <tfoot>
-                <tr class="total-row">
-                    <td colspan="5">Total</td>
-                    <td id="total-amount">0 FCFA</td>
-                </tr>
             </tfoot>
         </table>
         <div class="btn-container">
