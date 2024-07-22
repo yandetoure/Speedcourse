@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocery Management</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .back-btn {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #ff6600;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+        }
+        h2 {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            color: #333;
+        }
+        .continue-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .edit-btn, .delete-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .edit-btn {
+            background-color: #007bff;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+        }
+        .summary-header {
+            background-color: #ff0000;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            text-align: center;
+            padding: 10px;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .total-row {
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.26.0/dist/umd/supabase.min.js"></script>
+    <script>
+        // Liaison avec la base de données dans supabase
+        const { createClient } = supabase;
+        const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
+        const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
+        const database = createClient(url, key);
+        
+        async function addProductToCourse(courseId, productName, quantity, unitPrice, totalPrice) {
+            // Validation des entrées
+            if (!courseId || !productName || isNaN(quantity) || isNaN(unitPrice) || isNaN(totalPrice)) {
+                console.error('Tous les champs doivent être correctement remplis.');
+                return;
+            }
+
+            // Convertir les valeurs en entiers et flottants
+            quantity = parseInt(quantity);
+            unitPrice = parseFloat(unitPrice);
+            totalPrice = parseFloat(totalPrice);
+
+            try {
+                const { data, error } = await database
+                    .from('products')
+                    .insert([{ courseId, productName, quantity, unitPrice, totalPrice }]);
+
+                if (error) {
+                    console.error('Erreur lors de l\'ajout du produit:', error);
+                } else {
+                    console.log('Produit ajouté avec succès:', data);
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout du produit:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const createCourseForm = document.getElementById('course-form');
+            const addProductForm = document.getElementById('product-form');
+            const createCourseDiv = document.getElementById('create-course');
+            const addProductDiv = document.getElementById('add-product');
+            const courseSummaryDiv = document.getElementById('course-summary');
+            const productTable = document.getElementById('product-table');
+            const finishBtn = document.getElementById('finish-btn');
+
+            createCourseForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const coursename = document.getElementById('course-name').value;
+                const date = document.getElementById('course-date').value;
+
+                // Create the course in Supabase
+                const { data, error } = await database
+                    .from('courses')
+                    .insert([{ coursename, date }]);
+
+                if (error) {
+                    console.error('Erreur lors de la création de la course', error);
+                    return;
+                }
+
+                courseId = data[0].id;
+                console.log('Course created:', data);
+
+                createCourseDiv.style.display = 'none';
+                addProductDiv.style.display = 'block';
+                document.getElementById('summary-date').textContent = date;
+            });
+
+            addProductForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const productName = document.getElementById('product-name').value;
+                const quantity = document.getElementById('quantity').value;
+                const unitPrice = document.getElementById('unit-price').value || 0;
+                const totalPrice = quantity * unitPrice;
+
+                // Add the product to the course in Supabase
+                await addProductToCourse(courseId, productName, quantity, unitPrice, totalPrice);
+
+                const row = productTable.insertRow();
+                row.innerHTML = `
+                    <td>${productName}</td>
+                    <td>${quantity}</td>
+                    <td>${unitPrice}</td>
+                    <td>${totalPrice}</td>
+                    <td>À acheter</td>
+                `;
+
+                document.getElementById('product-form').reset();
+            });
+
+            finishBtn.addEventListener('click', () => {
+                addProductDiv.style.display = 'none';
+                courseSummaryDiv.style.display = 'block';
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="create-course" class="container">
+        <div class="header">
+            <a href="#" class="back-btn">← Retour</a>
+            <h1>Ajout d'une course</h1>
+        </div>
+        <form id="course-form">
+            <h2>Création d'une liste de course</h2>
+            <label for="course-name">Comment voulez-vous appeler votre course ?</label>
+            <input type="text" id="course-name" class="form-control" placeholder="Titre" required>
+
+            <label for="course-date">Choisissez une date pour la course</label>
+            <input type="date" id="course-date" class="form-control" required>
+
+            <button type="submit" class="continue-btn">Continuer</button>
+        </form>
+    </div>
+
+    <div id="add-product" class="container" style="display: none;">
+        <div class="header">
+            <a href="#" class="back-btn">← Retour</a>
+            <h1>Ajout d'un produit</h1>
+        </div>
+        <form id="product-form">
+            <h2>Ajouter des produits à votre course.</h2>
+            <label for="product-name">Ajouter le produit</label>
+            <input type="text" id="product-name" class="form-control" placeholder="Nom du produit" required>
+
+            <label for="quantity">Quantité</label>
+            <input type="number" id="quantity" class="form-control" placeholder="2" required>
+
+            <label for="unit-price">Prix unitaire</label>
+            <input type="number" id="unit-price" class="form-control" placeholder="*****">
+
+            <label for="total-price">Prix total</label>
+            <input type="number" id="total-price" class="form-control" placeholder="200" readonly>
+
+            <button type="submit" class="continue-btn" id="save">Continuer</button>
+        </form>
+        <button id="finish-btn" class="continue-btn">Finir</button>
+    </div>
+
+    <div id="course-summary" class="container" style="display: none;">
+        <div class="summary-header">
+            <h2>Soupe aux légumes</h2>
+            <p>Pour le : <span id="summary-date">20/07/2024</span></p>
+        </div>
+        <table id="product-table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Quantité</th>
+                    <th>Prix unitaire</th>
+                    <th>total</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="4">Total</td>
+                    <td id="total-amount">0 FCFA</td>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="buttons">
+            <button class="edit-btn">Modifier</button>
+            <button class="delete-btn">Supprimer</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -3,9 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Liste des produits</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="styles/main.css" rel="stylesheet">
 </head>
 <body>
-    
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h2>Liste des produits</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Quantité</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-list">
+                        <!-- Les éléments seront ajoutés ici dynamiquement -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/supabase-init.js"></script>
+    <script>
+        async function fetchItems() {
+            const { data, error } = await supabase
+                .from('items')
+                .select('*');
+
+            if (error) {
+                console.error('Error fetching items:', error.message);
+                return [];
+            }
+
+            return data;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const itemsList = document.getElementById('items-list');
+            const items = await fetchItems();
+
+            items.forEach(item => {
+                const row = document.createElement('tr');
+                const nameCell = document.createElement('td');
+                nameCell.textContent = item.name;
+                const quantityCell = document.createElement('td');
+                quantityCell.textContent = item.quantity;
+                row.appendChild(nameCell);
+                row.appendChild(quantityCell);
+                itemsList.appendChild(row);
+            });
+        });
+    </script>
 </body>
 </html>

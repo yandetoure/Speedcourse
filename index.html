@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -29,22 +29,7 @@
       </div>
 </header>
 
-<section class="caroussel-section">
-    <div id="caroussel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="img/Property 1=Default.png" class="d-block w-100" alt="Slide 1">
-            </div>
-            <div class="carousel-item">
-                <img src="img/Property 1=Variant5.png" class="d-block w-100" alt="Slide 2">
-            </div>
-            <div class="carousel-item">
-                <img src="img/Property 1=Variant3.png" class="d-block w-100" alt="Slide 4">
-            </div>
-        </div>
-    </div>
 
-</section>
 
 
 
@@ -65,7 +50,7 @@
     </script>
 
 
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script>
         // Liaison avec la base de données dans supabase
 const { createClient } = supabase;
@@ -112,6 +97,183 @@ async function displayTasks() {
         }
 
         window.addEventListener('DOMContentLoaded', displayTasks);
-    </script> -->
+    </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Gestion de Courses</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="styles/main.css" rel="stylesheet">
+
+    <style>
+        body {
+    background-color: #f8f9fa;
+}
+
+.card-header.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.card-header.bg-success {
+    background-color: #28a745 !important;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+.navbar-toggler {
+    background-color: orange;
+}
+.hr1{
+    border: 4px solid #ED7200;
+    margin-bottom: 20px;
+}
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div><img src="img/logo.png" alt="logo" width="200"> </div>
+         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+             <span class="navbar-toggler-icon"></span>
+         </button>
+         <div class="collapse navbar-collapse" id="navbarNav">
+             <ul class="navbar-nav">
+                 <li class="nav-item active">
+                     <a class="nav-link" href="#">Accueil</a>
+                 </li>
+                 <li class="nav-item">
+                     <a class="nav-link" href="#">Profil</a>
+                 </li>
+                 <li class="nav-item">
+                     <a class="nav-link" href="#">Mes Courses</a>
+                 </li>
+                 <li class="nav-item">
+                     <a class="nav-link" href="#">Déconnexion</a>
+                 </li>
+             </ul>
+         </div>
+     </nav>
+
+     <section class="caroussel-section">
+        <div id="caroussel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="img/Property 1=Default.png" class="d-block w-100" alt="Slide 1">
+                </div>
+                <div class="carousel-item">
+                    <img src="img/Property 1=Variant5.png" class="d-block w-100" alt="Slide 2">
+                </div>
+                <div class="carousel-item">
+                    <img src="img/Property 1=Variant3.png" class="d-block w-100" alt="Slide 4">
+                </div>
+            </div>
+        </div>
+    
+    </section>
+
+    <div id="app"></div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const app = document.getElementById('app');
+
+    const navbar = `
+
+
+
+    `;
+
+    const headerSection = `
+        <div class="text-center mb-4">
+            <hr classe="hr1">
+            <h2>Vous avez une course à faire aujourd'hui !</h2>
+        </div>
+    `;
+
+    const tableSection = (headerColor) => `
+        <div class="card mb-4">
+            <div class="card-header text-white ${headerColor}">
+                <h4>Soupe aux légumes</h4>
+                <p>Pour la liste des légumes</p>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantité</th>
+                            <th>Prix</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tomate</td>
+                            <td>5</td>
+                            <td>100 FCFA</td>
+                            <td><input type="checkbox"></td>
+                        </tr>
+                        <tr>
+                            <td>Carotte</td>
+                            <td>3</td>
+                            <td>150 FCFA</td>
+                            <td><input type="checkbox"></td>
+                        </tr>
+                        <tr>
+                            <td>Tomate</td>
+                            <td>2</td>
+                            <td>100 FCFA</td>
+                            <td><input type="checkbox"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3">Total</td>
+                            <td>350 FCFA</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <button class="btn btn-primary">Modifier</button>
+                <button class="btn btn-danger">Supprimer</button>
+            </div>
+        </div>
+    `;
+
+    app.innerHTML = `
+        ${navbar}
+        <div class="container mt-5">
+            ${headerSection}
+            ${tableSection('bg-danger')}
+            ${tableSection('bg-success')}
+            ${tableSection('bg-danger')}
+        </div>
+    `;
+});
+
+
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="scripts/app.js"></script>
 </body>
 </html>
+
