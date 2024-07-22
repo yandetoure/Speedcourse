@@ -4,35 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription et Connexion</title>
+    <!-- Lien vers le CSS de Bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .hidden { display: none; }
-        form { margin-bottom: 20px; }
+        .auth-form { max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
+        .auth-form h2 { margin-bottom: 20px; }
+        .auth-form p { margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div id="auth-container">
+    <div id="auth-container" class="d-flex justify-content-center align-items-center vh-100">
         <!-- Formulaire d'inscription -->
-        <form id="signup-form">
-            <h2>Inscription</h2>
-            <input type="email" id="signup-email" placeholder="Email" required />
-            <input type="password" id="signup-password" placeholder="Mot de passe" required />
-            <button type="submit" id="signup-button">S'inscrire</button>
-            <p>Déjà un compte ? <a href="#" id="show-signin">Se connecter</a></p>
+        <form id="signup-form" class="auth-form">
+            <div class="image">
+                <img src="img/logo.png" alt="logo">
+            </div>
+            <h2 class=" h2 text-center">Inscription</h2>
+            <div class="form-group">
+                <label for="signup-email">Email</label>
+                <input type="email" class="form-control" id="signup-email" placeholder="Email" required />
+            </div>
+            <div class="form-group">
+                <label for="signup-password">Mot de passe</label>
+                <input type="password" class="form-control" id="signup-password" placeholder="Mot de passe" required />
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="signup-button">S'inscrire</button>
+            <p class="text-center">Déjà un compte ? <a href="#" id="show-signin">Se connecter</a></p>
         </form>
 
         <!-- Formulaire de connexion -->
-        <form id="signin-form" class="hidden">
-            <h2>Connexion</h2>
-            <input type="email" id="signin-email" placeholder="Email" required />
-            <input type="password" id="signin-password" placeholder="Mot de passe" required />
-            <button type="submit" id="signin-button">Se connecter</button>
-            <p>Pas encore de compte ? <a href="#" id="show-signup">S'inscrire</a></p>
+        <form id="signin-form" class="auth-form hidden">
+            <div class="image">
+                <img src="img/logo.png" alt="logo">
+            </div>
+            <h2 class="text-center">Connexion</h2>
+            <div class="form-group">
+                <label for="signin-email">Email</label>
+                <input type="email" class="form-control" id="signin-email" placeholder="Email" required />
+            </div>
+            <div class="form-group">
+                <label for="signin-password">Mot de passe</label>
+                <input type="password" class="form-control" id="signin-password" placeholder="Mot de passe" required />
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="signin-button">Se connecter</button>
+            <p class="text-center">Pas encore de compte ? <a href="#" id="show-signup">S'inscrire</a></p>
         </form>
     </div>
 
+    <!-- Scripts de Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.26.0/dist/umd/supabase.min.js"></script>
     <script>
-        // Liaison avec la base de données dans supabase
+        // Configuration de Supabase
         const { createClient } = supabase;
         const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
         const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
@@ -40,6 +66,7 @@
 
         // Fonction d'inscription
         async function signUp(email, password) {
+            console.log('Tentative d\'inscription avec', email); // Débogage
             const { data, error } = await database.auth.signUp({ email, password });
             if (error) {
                 console.error('Erreur lors de l\'inscription:', error.message);
@@ -53,11 +80,14 @@
 
         // Fonction de connexion
         async function signIn(email, password) {
-            const { data, error } = await database.auth.signInWithPassword({ email, password });
+            console.log('Tentative de connexion avec', email); // Débogage
+            const { data, error } = await database.auth.signIn({ email, password });
             if (error) {
                 console.error('Erreur lors de la connexion:', error.message);
             } else {
                 console.log('Connexion réussie:', data);
+                // Redirection après une connexion réussie
+                window.location.href = 'index.html';
             }
         }
 

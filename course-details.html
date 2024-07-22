@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails de la Course</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.26.0/dist/umd/supabase.min.js"></script>
+    <script>
+        const { createClient } = supabase;
+        const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
+        const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
+        const database = createClient(url, key);
+
+        let courseId;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            courseId = urlParams.get('courseId');
+
+            if (!courseId) {
+                console.error('Aucun ID de course spécifié.');
+                return;
+            }
+
+            const courseNameEl = document.getElementById('course-name');
+            const courseDateEl = document.getElementById('course-date');
+            const productTable = document.getElementById('product-table');
+
+            try {
+                const { data: course, error: courseError } = await database
+                    .from('courses')
+                    .select('*')
+                    .eq('id', courseId)
+                    .single();
+
+                if (courseError) {
+                    console.error('Erreur lors de la récupération de la course:', courseError);
+                    return;
+                }
+
+                courseNameEl.textContent = course.coursename;
+                courseDateEl.textContent = course.date;
+
+                const { data: products, error: productError } = await database
+                    .from('products')
+                    .select('*')
+                    .eq('courseId', courseId);
+
+                if (productError) {
+                    console.error('Erreur lors de la récupération des produits:', productError);
+                } else {
+                    let total = 0;
+                    products.forEach(product => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${product.productname}</td>
+                            <td>${product.quantity}</td>
+                            <td>${product.price} FCFA</td>
+                        `;
+                        productTable.appendChild(row);
+                        total += product.price * product.quantity;
+                    });
+
+                    const totalRow = document.createElement('tr');
+                    totalRow.classList.add('total-row');
+                    totalRow.innerHTML = `
+                        <td colspan="2">Total</td>
+                        <td>${total} FCFA</td>
+                    `;
+                    productTable.appendChild(totalRow);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération des détails de la course:', error);
+            }
+        });
+
+        async function deleteCourse() {
+            if (confirm("Êtes-vous sûr de vouloir supprimer cette course ?")) {
+                try {
+                    const { data, error } = await database
+                        .from('courses')
+                        .delete()
+                        .eq('id', courseId);
+
+                    if (error) {
+                        console.error('Erreur lors de la suppression de la course:', error);
+                    } else {
+                        console.log('Course supprimée avec succès:', data);
+                        window.location.href = 'index.html';
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la suppression de la course:', error);
+                }
+            }
+        }
+
+        async function updateCourse() {
+            const newName = prompt("Entrez le nouveau nom de la course:");
+            const newDate = prompt("Entrez la nouvelle date de la course (YYYY-MM-DD):");
+
+            if (newName && newDate) {
+                try {
+                    const { data, error } = await database
+                        .from('courses')
+                        .update({ coursename: newName, date: newDate })
+                        .eq('id', courseId);
+
+                    if (error) {
+                        console.error('Erreur lors de la mise à jour de la course:', error);
+                    } else {
+                        console.log('Course mise à jour avec succès:', data);
+                        document.getElementById('course-name').textContent = newName;
+                        document.getElementById('course-date').textContent = newDate;
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la mise à jour de la course:', error);
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    
+</body>
+</html>
