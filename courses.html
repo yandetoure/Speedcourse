@@ -234,13 +234,13 @@
     async function deleteCourse(course) {
         if (confirm('Êtes-vous sûr de vouloir supprimer cette course ?')) {
             try {
-                const { error } = await database.from('courses').delete().eq('id', courseId);
+                const { error } = await database.from('courses').delete().eq('id', course);
                 if (error) {
                     console.error('Erreur lors de la suppression de la course:', error);
                     return;
                 }
 
-                document.getElementById(`course-card-${courseId}`).remove();
+                document.getElementById(`course-card-${course}`).remove();
                 console.log('Course supprimée avec succès');
             } catch (error) {
                 console.error('Erreur lors de la suppression de la course:', error);
@@ -266,11 +266,11 @@
     }
 
     function showEditCourseForm(course) {
-        const courseCard = document.getElementById(`course-card-${courseId}`);
-        const courseName = courseCard.querySelector('h3').textContent;
+        const courseCard = document.getElementById(`course-card-${course}`);
+        const courseName = courseCard.querySelector('h5').textContent;
         const courseDate = courseCard.querySelector('.card-header span').textContent.split(': ')[1];
 
-        document.getElementById('edit-course-id').value = courseId;
+        document.getElementById('edit-course-id').value = course;
         document.getElementById('edit-course-name').value = courseName;
         document.getElementById('edit-course-date').value = courseDate;
 
