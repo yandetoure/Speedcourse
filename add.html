@@ -126,6 +126,7 @@
             quantity = parseInt(quantity);
             unitPrice = parseFloat(unitPrice);
             totalPrice = parseFloat(totalPrice);
+            
 
             try {
                 const { data, error } = await database
@@ -260,10 +261,6 @@
                     <td>${quantity}</td>
                     <td>${unitPrice} FCFA</td>
                     <td>${totalPrice} FCFA</td>
-                    <td>
-                        <input type="checkbox" id="${statusCheckboxId}" class="status-checkbox">
-                        <label for="${statusCheckboxId}"></label>
-                    </td>
                 `;
 
                 document.getElementById('product-form').reset();
@@ -391,10 +388,6 @@
             <tfoot>
             </tfoot>
         </table>
-        <div class="btn-container">
-            <button class="continue-btn">Ajouter un produit</button>
-            <button class="delete-btn">Supprimer</button>
-        </div>
     </div>
     
 </body>
