@@ -88,6 +88,10 @@
         .navbar-logo{
             width:200px;
         }
+        .navbar{
+            background-color:#f8eceee5;
+            font-size: 20px;
+        }
         .carousel{
             height:500px;
             margin-top: -20px;
@@ -102,14 +106,10 @@
             width:97%;
             margin-left: -1%;
         }
-
-        @media  scre {
-            
-        }
     </style>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light">
         <a class="navbar-logo" href="#"><img src="img/logo.png" alt="logo" class="navbar-logo"></a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -233,10 +233,9 @@
                                     <thead>
                                         <tr>
                                             <th>Nom</th>
-                                            <th>Qté</th>
+                                            <th>Quantité</th>
                                             <th>Total</th>
                                             <th>Status</th>
-                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody id="product-list-${course.id}">
@@ -273,12 +272,9 @@
                             <td>${product.quantity}</td>
                             <td>${product.totalPrice} FCFA</td>
                             <td>
-                                <input type="checkbox" id="status-${product.id}" ${product.status ? 'checked' : ''} />
+                            <input type="checkbox" id="status-${product.id}" ${product.status ? 'checked' : ''} />
                             </td>
-                            <td class="product-actions">
-                                <i class="fas fa-edit edit-icon" onclick="showEditProductForm(${product.id})"></i>
-                                <i class="fas fa-trash delete-icon" onclick="deleteProduct(${product.id})"></i>
-                            </td>
+
                         `;
                         productList.appendChild(row);
 
@@ -311,141 +307,155 @@
                     console.error('Erreur lors de la récupération des produits:', error);
                 }
             }
-
-            async function deleteCourse(courseId) {
-                if (confirm('Êtes-vous sûr de vouloir supprimer cette course ?')) {
-                    try {
-                        const { error } = await database.from('courses').delete().eq('id', courseId);
-                        if (error) {
-                            console.error('Erreur lors de la suppression de la course:', error);
-                            return;
-                        }
-
-                        document.getElementById(`course-card-${courseId}`).remove();
-                        console.log('Course supprimée avec succès');
-                    } catch (error) {
-                        console.error('Erreur lors de la suppression de la course:', error);
-                    }
+          
+   
+            async function deleteCourse(course) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette course ?')) {
+            try {
+                const { error } = await database.from('courses').delete().eq('id', courseId);
+                if (error) {
+                    console.error('Erreur lors de la suppression de la course:', error);
+                    return;
                 }
+
+                document.getElementById(`course-card-${courseId}`).remove();
+                console.log('Course supprimée avec succès');
+            } catch (error) {
+                console.error('Erreur lors de la suppression de la course:', error);
+            }
+        }
+    }
+    
+    async function deleteCourse(course) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette course ?')) {
+            try {
+                const { error } = await database.from('courses').delete().eq('id', courseId);
+                if (error) {
+                    console.error('Erreur lors de la suppression de la course:', error);
+                    return;
+                }
+
+                document.getElementById(`course-card-${courseId}`).remove();
+                console.log('Course supprimée avec succès');
+            } catch (error) {
+                console.error('Erreur lors de la suppression de la course:', error);
+            }
+        }
+    }
+
+    async function deleteProduct(productId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+            try {
+                const { error } = await database.from('products').delete().eq('id', productId);
+                if (error) {
+                    console.error('Erreur lors de la suppression du produit:', error);
+                    return;
+                }
+
+                document.getElementById(`product-${productId}`).remove();
+                console.log('Produit supprimé avec succès');
+            } catch (error) {
+                console.error('Erreur lors de la suppression du produit:', error);
+            }
+        }
+    }
+
+    function showEditCourseForm(course) {
+        const courseCard = document.getElementById(`course-card-${courseId}`);
+        const courseName = courseCard.querySelector('h3').textContent;
+        const courseDate = courseCard.querySelector('.card-header span').textContent.split(': ')[1];
+
+        document.getElementById('edit-course-id').value = courseId;
+        document.getElementById('edit-course-name').value = courseName;
+        document.getElementById('edit-course-date').value = courseDate;
+
+        document.getElementById('edit-course-form').style.display = 'block';
+    }
+
+    function showEditProductForm(productId) {
+        const productRow = document.getElementById(`product-${productId}`);
+        const productName = productRow.querySelector('td:nth-child(1)').textContent;
+        const productQuantity = productRow.querySelector('td:nth-child(2)').textContent;
+        const productTotalPrice = productRow.querySelector('td:nth-child(3)').textContent.split(' ')[0];
+
+        document.getElementById('edit-product-id').value = productId;
+        document.getElementById('edit-product-name').value = productName;
+        document.getElementById('edit-quantity').value = productQuantity;
+        document.getElementById('edit-total-price').value = productTotalPrice;
+
+        document.getElementById('edit-product-form').style.display = 'block';
+    }
+
+    window.deleteCourse = deleteCourse;
+    window.showEditCourseForm = showEditCourseForm;
+    window.showEditProductForm = showEditProductForm;
+    window.deleteProduct = deleteProduct;
+
+    document.querySelector('#edit-product-form form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const productId = document.getElementById('edit-product-id').value;
+        const productName = document.getElementById('edit-product-name').value;
+        const quantity = document.getElementById('edit-quantity').value;
+        const unitPrice = document.getElementById('edit-unit-price').value;
+        const totalPrice = document.getElementById('edit-total-price').value;
+
+        try {
+            const { error } = await database.from('products').update({
+                productName,
+                quantity,
+                unitPrice,
+                totalPrice
+            }).eq('id', productId);
+            if (error) {
+                console.error('Erreur lors de la mise à jour du produit:', error);
+                return;
             }
 
-            async function deleteProduct(productId) {
-                if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
-                    try {
-                        const { error } = await database.from('products').delete().eq('id', productId);
-                        if (error) {
-                            console.error('Erreur lors de la suppression du produit:', error);
-                            return;
-                        }
+            const productRow = document.getElementById(`product-${productId}`);
+            productRow.querySelector('td:nth-child(1)').textContent = productName;
+            productRow.querySelector('td:nth-child(2)').textContent = quantity;
+            productRow.querySelector('td:nth-child(3)').textContent = `${totalPrice} FCFA`;
 
-                        document.getElementById(`product-${productId}`).remove();
-                        console.log('Produit supprimé avec succès');
-                    } catch (error) {
-                        console.error('Erreur lors de la suppression du produit:', error);
-                    }
-                }
+            document.getElementById('edit-product-form').style.display = 'none';
+            console.log('Produit mis à jour avec succès');
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour du produit:', error);
+        }
+    });
+
+    document.querySelector('#edit-course-form form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const courseId = document.getElementById('edit-course-id').value;
+        const courseName = document.getElementById('edit-course-name').value;
+        const courseDate = document.getElementById('edit-course-date').value;
+
+        try {
+            const { error } = await database.from('courses').update({
+                coursename: courseName,
+                date: courseDate
+            }).eq('id', courseId);
+            if (error) {
+                console.error('Erreur lors de la mise à jour de la course:', error);
+                return;
             }
 
-            function showEditCourseForm(courseId) {
-                const courseCard = document.getElementById(`course-card-${courseId}`);
-                const courseName = courseCard.querySelector('h5').textContent;
-                const courseDate = courseCard.querySelector('.card-header span').textContent.split(': ')[1];
+            const courseCard = document.getElementById(`course-card-${courseId}`);
+            courseCard.querySelector('h3').textContent = courseName;
+            courseCard.querySelector('.card-header span').textContent = `Date: ${courseDate}`;
 
-                document.getElementById('edit-course-id').value = courseId;
-                document.getElementById('edit-course-name').value = courseName;
-                document.getElementById('edit-course-date').value = courseDate;
+            document.getElementById('edit-course-form').style.display = 'none';
+            console.log('Course mise à jour avec succès');
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour de la course:', error);
+        }
+    });
 
-                document.getElementById('edit-course-form').style.display = 'block';
-            }
-
-            function showEditProductForm(productId) {
-                const productRow = document.getElementById(`product-${productId}`);
-                const productName = productRow.querySelector('td:nth-child(1)').textContent;
-                const quantity = productRow.querySelector('td:nth-child(2)').textContent;
-                const totalPrice = productRow.querySelector('td:nth-child(3)').textContent;
-
-                document.getElementById('edit-product-id').value = productId;
-                document.getElementById('edit-product-name').value = productName;
-                document.getElementById('edit-product-quantity').value = quantity;
-                document.getElementById('edit-product-total').value = totalPrice;
-
-                document.getElementById('edit-product-form').style.display = 'block';
-            }
-
-            document.getElementById('edit-course-form').addEventListener('submit', async (event) => {
-                event.preventDefault();
-
-                const courseId = document.getElementById('edit-course-id').value;
-                const courseName = document.getElementById('edit-course-name').value;
-                const courseDate = document.getElementById('edit-course-date').value;
-
-                try {
-                    const { error } = await database.from('courses').update({ coursename: courseName, date: courseDate }).eq('id', courseId);
-                    if (error) {
-                        console.error('Erreur lors de la mise à jour de la course:', error);
-                        return;
-                    }
-
-                    document.getElementById(`course-card-${courseId}`).querySelector('h5').textContent = courseName;
-                    document.getElementById(`course-card-${courseId}`).querySelector('.card-header span').textContent = `Date: ${courseDate}`;
-                    document.getElementById('edit-course-form').style.display = 'none';
-
-                    console.log('Course mise à jour avec succès');
-                } catch (error) {
-                    console.error('Erreur lors de la mise à jour de la course:', error);
-                }
-            });
-
-            document.getElementById('edit-product-form').addEventListener('submit', async (event) => {
-                event.preventDefault();
-
-                const productId = document.getElementById('edit-product-id').value;
-                const productName = document.getElementById('edit-product-name').value;
-                const quantity = document.getElementById('edit-product-quantity').value;
-                const totalPrice = document.getElementById('edit-product-total').value;
-
-                try {
-                    const { error } = await database.from('products').update({ productName, quantity, totalPrice }).eq('id', productId);
-                    if (error) {
-                        console.error('Erreur lors de la mise à jour du produit:', error);
-                        return;
-                    }
-
-                    const productRow = document.getElementById(`product-${productId}`);
-                    productRow.querySelector('td:nth-child(1)').textContent = productName;
-                    productRow.querySelector('td:nth-child(2)').textContent = quantity;
-                    productRow.querySelector('td:nth-child(3)').textContent = totalPrice;
-                    document.getElementById('edit-product-form').style.display = 'none';
-
-                    console.log('Produit mis à jour avec succès');
-                } catch (error) {
-                    console.error('Erreur lors de la mise à jour du produit:', error);
-                }
-            });
-
-            async function checkAllProductsChecked(courseId) {
-                try {
-                    const { data, error } = await database.from('products').select('status').eq('courseId', courseId);
-                    if (error) {
-                        console.error('Erreur lors de la vérification des produits:', error);
-                        return;
-                    }
-
-                    const allChecked = data.every(product => product.status);
-                    const courseCard = document.getElementById(`course-card-${courseId}`);
-                    if (allChecked) {
-                        courseCard.querySelector('.card-header').style.backgroundColor = 'green';
-                    } else {
-                        courseCard.querySelector('.card-header').style.backgroundColor = '#E30404'; // couleur d'origine
-                    }
-                } catch (error) {
-                    console.error('Erreur lors de la vérification des produits:', error);
-                }
-            }
-
-            fetchCourses();
-        });
+    fetchCourses();
+});
     </script>
+
     <!-- Bootstrap JS and dependencies -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>

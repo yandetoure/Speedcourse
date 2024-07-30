@@ -10,12 +10,15 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
+            justify-content: center;
         }
         .container {
-            margin-top: 20px;
+            margin-top: 10px;
         }
         .card {
             margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .card-header {
             justify-content: space-between;
@@ -27,9 +30,11 @@
             border-top-right-radius: 10px;
             text-align: center;
         }
-        .card-header h3 {
-            text-align: center;
-            flex: 1;
+        .card-header.checked {
+            background-color: green;
+        }
+        .card-body {
+            font-size: 14px;
         }
         .product-table {
             width: 100%;
@@ -56,101 +61,177 @@
         .form-container input, .form-container select {
             margin-bottom: 10px;
         }
-        .card-body {
-            padding: 10px;
-            font-size: 13px;
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
         }
-                .h5 {
+        .h5 {
             font-size: 18px;
             text-align: center;
             color: white;
             font-weight: bold;
         }
+        .span {
+            font-size: 16px;
+            font-weight: 500;
+            color: white;
+        }
+        .h1 {
+            color: rgb(21, 255, 0);
+        }
+        .checkbox-green {
+            background-color: green;
+            color: white;
+        }
+        .checkbox-red {
+            background-color: red;
+            color: white;
+        }
+        .navbar-logo {
+            width: 200px;
+        }
+        .navbar {
+            background-color: #f8eceee5;
+            font-size: 20px;
+        }
+        .carousel {
+            height: 500px;
+            margin-top: -20px;
+        }
+        .d-block {
+            width: auto;
+            height: 550px;
+            margin-top: -250px;
+        }
+        #slide {
+            height: 300px;
+            width: 97%;
+            margin-left: -1%;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.26.0/dist/umd/supabase.min.js"></script>
     <script>
-const { createClient } = supabase;
-const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
-const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
-const database = createClient(url, key);
+        const { createClient } = supabase;
+        const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
+        const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
+        const database = createClient(url, key);
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const courseContainer = document.getElementById('course-container');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const courseContainer = document.getElementById('course-container');
 
-    async function fetchCourses() {
-        try {
-            const { data, error } = await database.from('courses').select('*');
-            if (error) {
-                console.error('Erreur lors de la récupération des courses:', error);
-                return;
+            async function fetchCourses() {
+                try {
+                    const { data, error } = await database.from('courses').select('*');
+                    if (error) {
+                        console.error('Erreur lors de la récupération des courses:', error);
+                        return;
+                    }
+
+                    data.forEach(course => {
+                        const card = document.createElement('div');
+                        card.classList.add('card');
+                        card.id = `course-card-${course.id}`;
+                        card.innerHTML = `
+                            <div class="card-header" id="course-header-${course.id}">
+                                <h5>${course.coursename}</h5>
+                                <span>Date: ${course.date}</span>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-striped product-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Quantité</th>
+                                            <th>Total</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="product-list-${course.id}">
+                                    </tbody>
+                                </table>
+                                <div class="btn-container">
+                                    <button class="btn btn-primary" onclick="showEditCourseForm(${course.id})">Modifier</button>
+                                    <button class="btn btn-danger" onclick="deleteCourse(${course.id})">Supprimer</button>
+                                </div>
+                            </div>
+                        `;
+                        courseContainer.appendChild(card);
+                        fetchProducts(course.id);
+                    });
+                } catch (error) {
+                    console.error('Erreur lors de la récupération des courses:', error);
+                }
             }
 
-            data.forEach(course => {
-                const card = document.createElement('div');
-                card.classList.add('card');
-                card.id = `course-card-${course.id}`;
-                card.innerHTML = `
-                    <div class="card-header">
-                        <h5>${course.coursename}</h5>
-                        <span>Date: ${course.date}</span>
+            async function fetchProducts(courseId) {
+                try {
+                    const { data, error } = await database.from('products').select('*').eq('courseId', courseId);
+                    if (error) {
+                        console.error('Erreur lors de la récupération des produits:', error);
+                        return;
+                    }
 
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-striped product-table">
-                            <thead>
-                                <tr>
-                                    <th>Nom</th>
-                                    <th>Quantité</th>
-                                    <th>Total</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="product-list-${course.id}">
-                            </tbody>
-                        </table>
-                        <div class="btn-container">
-                            <button class="btn btn-primary" onclick="showEditCourseForm(${course.id})">Modifier</button>
-                            <button class="btn btn-danger" onclick="deleteCourse(${course.id})">Supprimer</button>
-                        </div>
-                    </div>
-                `;
-                courseContainer.appendChild(card);
-                fetchProducts(course.id);
-            });
-        } catch (error) {
-            console.error('Erreur lors de la récupération des courses:', error);
-        }
-    }
+                    const productList = document.getElementById(`product-list-${courseId}`);
+                    data.forEach(product => {
+                        const row = document.createElement('tr');
+                        row.id = `product-${product.id}`;
+                        row.innerHTML = `
+                            <td>${product.productName}</td>
+                            <td>${product.quantity}</td>
+                            <td>${product.totalPrice} FCFA</td>
+                            <td class="product-actions">
+                                <i class="fas fa-edit edit-icon" onclick="showEditProductForm(${product.id})"></i>
+                                <i class="fas fa-trash delete-icon" onclick="deleteProduct(${product.id})"></i>
+                                <input type="checkbox" id="status-${product.id}" ${product.status ? 'checked' : ''} />
+                            </td>
+                        `;
+                        productList.appendChild(row);
 
-    async function fetchProducts(courseId) {
-        try {
-            const { data, error } = await database.from('products').select('*').eq('courseId', courseId);
-            if (error) {
-                console.error('Erreur lors de la récupération des produits:', error);
-                return;
+                        // Update checkbox color based on status
+                        const checkbox = document.getElementById(`status-${product.id}`);
+                        checkbox.style.backgroundColor = product.status ? 'green' : 'red';
+
+                        // Add change event listener to the checkbox
+                        checkbox.addEventListener('change', async (event) => {
+                            const status = event.target.checked;
+                            try {
+                                const { error } = await database.from('products').update({ status }).eq('id', product.id);
+                                if (error) {
+                                    console.error('Erreur lors de la mise à jour du statut du produit:', error);
+                                    return;
+                                }
+                                event.target.style.backgroundColor = status ? 'green' : 'red';
+
+                                // Check if all products are checked
+                                checkAllProductsChecked(courseId);
+                            } catch (error) {
+                                console.error('Erreur lors de la mise à jour du statut du produit:', error);
+                            }
+                        });
+                    });
+
+                    // Check all products initially
+                    checkAllProductsChecked(courseId);
+                } catch (error) {
+                    console.error('Erreur lors de la récupération des produits:', error);
+                }
             }
 
-            const productList = document.getElementById(`product-list-${courseId}`);
-            data.forEach(product => {
-                const row = document.createElement('tr');
-                row.id = `product-${product.id}`;
-                row.innerHTML = `
-                    <td>${product.productName}</td>
-                    <td>${product.quantity}</td>
-                    <td>${product.totalPrice} FCFA</td>
-                    <td class="product-actions">
-                        <i class="fas fa-edit edit-icon" onclick="showEditProductForm(${product.id})"></i>
-                        <i class="fas fa-trash delete-icon" onclick="deleteProduct(${product.id})"></i>
-                    </td>
-                `;
-                productList.appendChild(row);
-            });
-        } catch (error) {
-            console.error('Erreur lors de la récupération des produits:', error);
-        }
-    }
+            function checkAllProductsChecked(courseId) {
+                const productList = document.getElementById(`product-list-${courseId}`);
+                const checkboxes = productList.querySelectorAll('input[type="checkbox"]');
+                const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
 
-    async function deleteCourse(courseId) {
+                const header = document.getElementById(`course-header-${courseId}`);
+                if (allChecked) {
+                    header.classList.add('checked');
+                } else {
+                    header.classList.remove('checked');
+                }
+            }
+          
+
+    async function deleteCourse(course) {
         if (confirm('Êtes-vous sûr de vouloir supprimer cette course ?')) {
             try {
                 const { error } = await database.from('courses').delete().eq('id', courseId);
@@ -184,7 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function showEditCourseForm(courseId) {
+    function showEditCourseForm(course) {
         const courseCard = document.getElementById(`course-card-${courseId}`);
         const courseName = courseCard.querySelector('h3').textContent;
         const courseDate = courseCard.querySelector('.card-header span').textContent.split(': ')[1];
