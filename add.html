@@ -6,109 +6,11 @@
     <title>Gestion de tâche</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-        }
-        .container {
-            margin-top: 20px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .back-btn {
-            margin-right: 10px;
-            text-decoration: none;
-            color: #ff6600;
-        }
-        .header h1 {
-            font-size: 1.5rem;
-        }
-        h2 {
-            font-size: 1.2rem;
-            margin-top: 20px;
-            color: #333;
-        }
-        label {
-            font-weight: bold;
-            margin-top: 10px;
-            color: #333;
-        }
-        .continue-btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin-top: 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .edit-btn, .delete-btn {
-            padding: 5px 10px;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .edit-btn {
-            background-color: #007bff;
-        }
-        .delete-btn {
-            background-color: #dc3545;
-        }
-        .summary-header {
-            background-color: #ff6600;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            border-radius: 5px;
-        }
-        table {
-            width: 100%;
-            margin-top: 20px;
-        }
-        th, td {
-            text-align: center;
-            padding: 10px;
-        }
-        th {
-            background-color: #f8f9fa;
-        }
-        .total-row {
-            font-weight: bold;
-        }
-        .status-checkbox:checked + label {
-            background-color: #28a745;
-            color: white;
-        }
-        .status-checkbox {
-            display: none;
-        }
-        .status-checkbox + label {
-            cursor: pointer;
-            padding: 5px;
-            border: 1px solid #ced4da;
-            border-radius: 3px;
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            text-align: center;
-        }
-        .btn-container {
-            display: flex;
-            justify-content: space-between;
-        }
+        /* Votre style CSS */
+        /* ... */
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.26.0/dist/umd/supabase.min.js"></script>
     <script>
-        // Liaison avec la base de données dans supabase
         const { createClient } = supabase;
         const url = "https://zjazvgpfizeesuwwqivp.supabase.co";
         const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqYXp2Z3BmaXplZXN1d3dxaXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjEzMTg3ODUsImV4cCI6MjAzNjg5NDc4NX0.uGh0CBCzJv611vEEboB-0dBm17MaO3PLYwYnxmjfODQ";
@@ -127,16 +29,16 @@
             unitPrice = parseFloat(unitPrice);
             totalPrice = parseFloat(totalPrice);
             
-
             try {
                 const { data, error } = await database
                     .from('products')
-                    .insert([{ courseId, productName, quantity, unitPrice, totalPrice, status: 'À acheter' }]);
+                    .insert([{ courseId, productName, quantity, unitPrice, totalPrice }]);
 
                 if (error) {
                     console.error('Erreur lors de l\'ajout du produit:', error);
                 } else {
                     console.log('Produit ajouté avec succès:', data);
+                    updateProductTable();
                 }
             } catch (error) {
                 console.error('Erreur lors de l\'ajout du produit:', error);
@@ -151,7 +53,7 @@
 
             quantity = parseInt(quantity);
             unitPrice = parseFloat(unitPrice);
-            totalPrice = totalPrice = quantity * unitPrice;
+            totalPrice = quantity * unitPrice;
 
             try {
                 const { data, error } = await database
@@ -163,6 +65,7 @@
                     console.error('Erreur lors de la mise à jour du produit:', error);
                 } else {
                     console.log('Produit mis à jour avec succès:', data);
+                    updateProductTable();
                 }
             } catch (error) {
                 console.error('Erreur lors de la mise à jour du produit:', error);
@@ -180,6 +83,7 @@
                     console.error('Erreur lors de la suppression du produit:', error);
                 } else {
                     console.log('Produit supprimé avec succès:', data);
+                    updateProductTable();
                 }
             } catch (error) {
                 console.error('Erreur lors de la suppression du produit:', error);
@@ -198,10 +102,68 @@
                     console.error('Erreur lors de la mise à jour du statut du produit:', error);
                 } else {
                     console.log('Statut du produit mis à jour avec succès:', data);
+                    updateProductTable();
                 }
             } catch (error) {
                 console.error('Erreur lors de la mise à jour du statut du produit:', error);
             }
+        }
+
+        async function updateProductTable() {
+            const productTable = document.getElementById('product-table');
+            productTable.querySelector('tbody').innerHTML = '';
+
+            const { data: products, error } = await database
+                .from('products')
+                .select('*')
+                .eq('courseId', courseId);
+
+            if (error) {
+                console.error('Erreur lors de la récupération des produits:', error);
+                return;
+            }
+
+            products.forEach(product => {
+                const row = productTable.insertRow();
+                row.dataset.productId = product.id;
+
+                const statusCheckboxId = `status-checkbox-${product.id}`;
+                row.innerHTML = `
+                    <td>${product.productName}</td>
+                    <td>${product.quantity}</td>
+                    <td>${product.unitPrice} FCFA</td>
+                    <td>${product.totalPrice} FCFA</td>
+                    <td><input type="checkbox" id="${statusCheckboxId}" ${product.status === 'Acheté' ? 'checked' : ''}>
+                        <label for="${statusCheckboxId}"></label>
+                    </td>
+                `;
+
+                const editBtn = document.createElement('button');
+                editBtn.classList.add('edit-btn');
+                editBtn.innerText = 'Modifier';
+                editBtn.addEventListener('click', () => {
+                    editingProductId = product.id;
+                    document.getElementById('product-name').value = product.productName;
+                    document.getElementById('quantity').value = product.quantity;
+                    document.getElementById('unit-price').value = product.unitPrice;
+                    document.getElementById('total-price').value = product.totalPrice;
+                });
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('delete-btn');
+                deleteBtn.innerText = 'Supprimer';
+                deleteBtn.addEventListener('click', async () => {
+                    await deleteProduct(product.id);
+                });
+
+                row.insertCell(-1).appendChild(editBtn);
+                row.insertCell(-1).appendChild(deleteBtn);
+
+                row.querySelector('input[type="checkbox"]').addEventListener('change', async (event) => {
+                    const status = event.target.checked ? 'Acheté' : 'À acheter';
+                    await toggleProductStatus(product.id, status);
+                });
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -210,7 +172,6 @@
             const createCourseDiv = document.getElementById('create-course');
             const addProductDiv = document.getElementById('add-product');
             const courseSummaryDiv = document.getElementById('course-summary');
-            const productTable = document.getElementById('product-table');
             const finishBtn = document.getElementById('finish-btn');
             const productNameInput = document.getElementById('product-name');
             const quantityInput = document.getElementById('quantity');
@@ -254,54 +215,8 @@
                     await addProductToCourse(courseId, productName, quantity, unitPrice, totalPrice);
                 }
 
-                const row = productTable.insertRow();
-                const statusCheckboxId = `status-checkbox-${productTable.rows.length}`;
-                row.innerHTML = `
-                    <td>${productName}</td>
-                    <td>${quantity}</td>
-                    <td>${unitPrice} FCFA</td>
-                    <td>${totalPrice} FCFA</td>
-                `;
-
                 document.getElementById('product-form').reset();
-
-                row.querySelector('.status-checkbox').addEventListener('change', async (event) => {
-                    const isChecked = event.target.checked;
-                    const status = isChecked ? 'Acheté' : 'À acheter';
-                    const label = event.target.nextElementSibling;
-
-                    if (isChecked) {
-                        label.style.backgroundColor = '#28a745';
-                        label.style.color = 'white';
-                    } else {
-                        label.style.backgroundColor = '';
-                        label.style.color = '';
-                    }
-
-                    await toggleProductStatus(row.dataset.productId, status);
-                });
-
-                const editBtn = document.createElement('button');
-                editBtn.classList.add('edit-btn');
-                editBtn.innerText = 'Modifier';
-                editBtn.addEventListener('click', () => {
-                    editingProductId = row.dataset.productId;
-                    productNameInput.value = row.cells[0].innerText;
-                    quantityInput.value = row.cells[1].innerText;
-                    unitPriceInput.value = parseFloat(row.cells[2].innerText);
-                    totalPriceInput.value = parseFloat(row.cells[3].innerText);
-                });
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.classList.add('delete-btn');
-                deleteBtn.innerText = 'Supprimer';
-                deleteBtn.addEventListener('click', async () => {
-                    await deleteProduct(row.dataset.productId);
-                    row.remove();
-                });
-
-                row.insertCell(-1).appendChild(editBtn);
-                row.insertCell(-1).appendChild(deleteBtn);
+                updateProductTable(); // Refresh the product table after adding or updating a product
             });
 
             unitPriceInput.addEventListener('input', () => {
@@ -319,6 +234,20 @@
             finishBtn.addEventListener('click', () => {
                 addProductDiv.style.display = 'none';
                 courseSummaryDiv.style.display = 'block';
+                updateProductTable();
+            });
+
+            // Back buttons functionality
+            document.querySelectorAll('.back-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (addProductDiv.style.display === 'block') {
+                        createCourseDiv.style.display = 'block';
+                        addProductDiv.style.display = 'none';
+                    } else if (courseSummaryDiv.style.display === 'block') {
+                        addProductDiv.style.display = 'block';
+                        courseSummaryDiv.style.display = 'none';
+                    }
+                });
             });
         });
     </script>
@@ -378,10 +307,8 @@
                     <th>Quantité</th>
                     <th>Prix unitaire</th>
                     <th>Total</th>
-                    <th>Statut</th><br>
-
+                    <th>Actions</th>
                 </tr>
-                <th>Actions</th>
             </thead>
             <tbody>
             </tbody>
@@ -389,6 +316,5 @@
             </tfoot>
         </table>
     </div>
-    
 </body>
 </html>
