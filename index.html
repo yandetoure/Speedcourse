@@ -93,6 +93,7 @@
         .navbar {
             background-color: #f8eceee5;
             font-size: 20px;
+            margin-bottom: 15px;
         }
         .carousel {
             height: 500px;
@@ -244,8 +245,8 @@
                 text: "Vous avez marqué un produit comme 'acheté'",
                 });
                 } else {
-                    header.classList.remove('checked');
-                    Swal.fire({
+                header.classList.remove('checked');
+                Swal.fire({
                 icon: "succerroress",
                 title: "Oops!",
                 text: "Vous avez marqué un produit comme 'non acheté'",
@@ -410,6 +411,7 @@
           </ul>
         </div>
       </nav>
+      
       <div id="slide" class="carousel slide" data-ride="carousel">
         <ol class="carousel-indicators">
           <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
